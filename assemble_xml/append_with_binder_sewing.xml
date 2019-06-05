@@ -1,0 +1,37 @@
+<ROSETTASCRIPTS>
+  <SCOREFXNS>
+  </SCOREFXNS>
+  <RESIDUE_SELECTORS>
+  </RESIDUE_SELECTORS>
+  <FILTERS>
+  </FILTERS>
+  <MOVERS>
+    <AppendAssemblyMover name="assemble"
+      model_file_name="smotifs_H_5_40_L_2_6_H_5_40.segments"
+      partner_pdb = "binder.pdb"
+      add_probability="0.05"
+      hashed="false"
+      minimum_cycles="1000"
+      maximum_cycles="1100"
+      max_segments = "11"
+      output_partner = "true">
+      <AssemblyScorers>
+    			<MotifScorer weight = "1" />
+    			<InterModelMotifScorer weight = "10" />
+    			<PartnerMotifScorer weight = "10" />
+    	</AssemblyScorers>
+      <AssemblyRequirements>
+        <DsspSpecificLengthRequirement dssp_code="L" maximum_length="6" />                                                                                                     
+        <DsspSpecificLengthRequirement dssp_code="H" maximum_length="25" minimum_length="10" />                                                                                     
+        <ClashRequirement clash_radius = "4" />
+        <SizeInSegmentsRequirement maximum_size="7" minimum_size="5" />
+        <NonTerminalStartingSegmentRequirement />
+      </AssemblyRequirements>
+    </AppendAssemblyMover>
+  </MOVERS>
+  <APPLY_TO_POSE>
+  </APPLY_TO_POSE>
+  <PROTOCOLS>
+  	<Add mover_name="assemble" />
+  </PROTOCOLS>
+</ROSETTASCRIPTS>

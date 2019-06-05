@@ -1,0 +1,78 @@
+<ROSETTASCRIPTS>
+	<SCOREFXNS>
+		<ScoreFunction name="ref2015_cart" weights="ref2015_cart">
+    </ScoreFunction> 		
+    <ScoreFunction name="ref2015" weights="ref2015"> 
+    </ScoreFunction>
+    <ScoreFunction name="ref2015_soft" weights="ref2015_soft">
+    	<Reweight scoretype="res_type_constraint" weight="1.0" />
+    </ScoreFunction> 	
+  </SCOREFXNS>
+  <RESIDUE_SELECTORS>
+    <SecondaryStructure name="loops" overlap="1" include_terminal_loops="false" ss="L" use_dssp= "true" />
+    <Layer name="core" select_core="true" use_sidechain_neighbors="true"/>
+    <Layer name="boundary" select_boundary="true" use_sidechain_neighbors="true"/>
+    <Layer name="surface" select_surface="true" use_sidechain_neighbors="true"/>
+    <Not name="not_loops" selector="loops"/>
+    <ResiduePDBInfoHasLabel name="vital_residues" property = "VITAL" /> 
+  </RESIDUE_SELECTORS>
+  <TASKOPERATIONS>
+    <InitializeFromCommandline name="init"/>
+   	<IncludeCurrent name="current" />
+    <RestrictAbsentCanonicalAAS name="nocys" keep_aas="ADEFGHIKLMNPQRSTVWY" />
+    <OperateOnResidueSubset name="surface_to" selector="surface" >
+    		<RestrictAbsentCanonicalAASRLT aas="DEGHKNPQRST"/> 
+    </OperateOnResidueSubset> 
+  	<OperateOnResidueSubset name="boundary_to" selector="boundary" >
+    		<RestrictAbsentCanonicalAASRLT aas="ADEFGIKLNPQRSTVWY"/>
+    </OperateOnResidueSubset>
+  	<OperateOnResidueSubset name="core_to" selector="core"> 
+  			<RestrictAbsentCanonicalAASRLT aas="AFILPVWY"/>
+  	</OperateOnResidueSubset> 
+  	<OperateOnResidueSubset name="helix_to" selector="not_loops" > 			
+    		<RestrictAbsentCanonicalAASRLT aas="ADEHIKLNQRSTVWY"/>
+  	</OperateOnResidueSubset>
+  	<OperateOnResidueSubset name="only_B" selector="chB" >
+    		<PreventRepackingRLT/>
+  	</OperateOnResidueSubset>
+		<OperateOnResidueSubset name="vitals" selector="vital_residues" >
+  			<RestrictToRepackingRLT/>
+		</OperateOnResidueSubset>
+  </TASKOPERATIONS>
+	<FILTERS>
+    <SecondaryStructureHasResidue name="require_core" confidence="0" /> 
+    <PackStat name="pstat" threshold="0.60" repeats="1" confidence="0" />
+    <SSPrediction name="sspred" threshold="0.35" use_svm="1" use_probability="1" mismatch_probability="1" confidence="0" />
+    <BuriedUnsatHbonds name="bunsat" scorefxn="ref2015" cutoff="5" confidence="1" />
+	</FILTERS>
+	<MOVERS>
+   	<AddConstraints name="constrain_loop_identities" >	
+    		<ResidueTypeConstraintGenerator name="loop_csts" residue_selector="loops" favor_native_bonus="1.0" />
+    </AddConstraints>
+    <PackRotamersMover name="prepack" 
+    	scorefxn="ref2015_soft" 
+    	task_operations="init,nocys,current,core_to,surface_to,boundary_to,helix_to" />
+    <MinMover name="cartesian_min" 
+    	scorefxn="ref2015_cart" chi="false" bb="false" omega="false" 
+    	jump="ALL" cartesian="true" bondangle="true" bondlength="true" 
+    	tolerance="0.001" max_iter="1000" />
+    <FastDesign name="relax" 
+    	scorefxn="ref2015" 
+    	disable_design="false"
+    	repeats="2"
+    	task_operations="init,nocys,current,core_to,surface_to,boundary_to,helix_to,vitals"
+    	min_type="lbfgs_armijo_nonmonotone"
+    	ramp_down_constraints="false" />
+	</MOVERS>
+	<APPLY_TO_POSE>
+	</APPLY_TO_POSE> 
+	<PROTOCOLS>
+    <Add mover_name="constrain_loop_identities" />
+    <Add mover_name="prepack" /> 
+    <Add mover_name="relax" /> 
+    <Add filter_name="require_core" />
+    <Add filter_name="pstat" />
+    <Add filter_name="bunsat" />
+    <Add filter_name="sspred" />
+	</PROTOCOLS>
+</ROSETTASCRIPTS>

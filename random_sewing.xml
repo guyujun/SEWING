@@ -1,0 +1,36 @@
+<ROSETTASCRIPTS>
+  <SCOREFXNS>
+  </SCOREFXNS>
+  <RESIDUE_SELECTORS>
+  </RESIDUE_SELECTORS>
+  <FILTERS>
+  </FILTERS>
+	<MOVERS>
+    main mover
+		<AssemblyMover
+    	name="assemble"
+    	minimum_cycles="10000"
+    	maximum_cycles="100000"
+    	start_temperature="0.6"
+    	end_temperature="0.6"
+    	hashed="false"
+    	window_width="4"
+    	model_file_name="smotifs_H_5_40_L_2_6_H_5_40.segments">
+    	<AssemblyScorers>
+        <MotifScorer weight="1" />
+        <InterModelMotifScorer weight="10" />
+    	</AssemblyScorers>
+      requirements control
+    	<AssemblyRequirements>
+        <ClashRequirement clash_radius="5" />
+        <SizeInSegmentsRequirement minimum_size="5" maximum_size="7" />
+        <DsspSpecificLengthRequirement dssp_code="H" minimum_length="12" maximum_length="1000" />
+    	</AssemblyRequirements>
+	</AssemblyMover>
+  </MOVERS>
+  <APPLY_TO_POSE>
+  </APPLY_TO_POSE>
+  <PROTOCOLS>
+  	<Add mover_name="assemble" />
+  </PROTOCOLS>
+</ROSETTASCRIPTS>
